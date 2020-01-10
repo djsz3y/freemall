@@ -4,6 +4,11 @@ import axios from 'axios'
 import VueAxios from 'vue-axios'
 // 8.导入定义的路由router.js，导入的是小写的，在实例化Vue时就不用变了。
 import router from './router'
+// 页面出来后，引入样式。
+// js是通过export default暴露了一个对象出来。
+// 但是css没有。所以只能引入。
+import './assets/css/base.css'
+import './assets/css/index.css'
 
 // 关联axios和vue
 Vue.use(VueAxios,axios);

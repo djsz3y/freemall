@@ -10,7 +10,7 @@ module.exports = {
 			// 前提是要改域名的话，需要配置本地的host。我们这里就默认localhost了。
 		host:'localhost',
 		// 端口
-		port:9090,
+		port:8080,
 		// 代理：因为后面需要使用接口,需要使用代理。
 			// 通常接口要调用服务端接口可能都不是同一个域名,
 			// 不是同一个域名涉及跨域，一旦跨域很麻烦。
@@ -20,7 +20,7 @@ module.exports = {
 			'/mock':{
 				// 会把mock代理到哪?代理到目标路径target
 					// 请求的是/mock这个路径，会代理到target后面的这个路径上去。
-				target:'http://localhost:9090',
+				target:'http://localhost:8080',
 				// 是否需要开启websoket，否。
 				ws:false,
 				// 是否将主机头的原点改为目标的URL
