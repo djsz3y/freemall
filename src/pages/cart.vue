@@ -56,38 +56,38 @@
             </ul>
           </div>
           <ul class="cart-item-list">
-            <li>
+            <li v-for="item in cartList" v-bind:key="item.productId">
               <div class="cart-tab-1">
                 <div class="cart-item-check">
-                  <a href="javascipt:;" class="checkbox-btn item-check-btn checked">
+                  <a href="javascipt:;" class="checkbox-btn item-check-btn" v-bind:class="{'checked':item.checked}">
                     <svg class="icon icon-ok">
                       <use xlink:href="#icon-ok"></use>
                     </svg>
                   </a>
                 </div>
                 <div class="cart-item-pic">
-                  <img src="/imgs/1.jpg">
+                  <img v-bind:src="'/imgs/'+item.productImage">
                 </div>
                 <div class="cart-item-title">
-                  <div class="item-name">小度人工智能音箱</div>
+                  <div class="item-name">{{item.productName}}</div>
                 </div>
               </div>
               <div class="cart-tab-2">
-                <div class="item-price">89</div>
+                <div class="item-price">{{item.productPrice}}</div>
               </div>
               <div class="cart-tab-3">
                 <div class="item-quantity">
                   <div class="select-self select-self-open">
                     <div class="select-self-area">
                       <a class="input-sub">-</a>
-                      <span class="select-ipt">1</span>
+                      <span class="select-ipt">{{item.productNum}}</span>
                       <a class="input-add">+</a>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="cart-tab-4">
-                <div class="item-price-total">￥89.00元</div>
+                <div class="item-price-total">￥{{item.productPrice*item.productNum}}元</div>
               </div>
               <div class="cart-tab-5">
                 <div class="cart-item-opration">
@@ -138,6 +138,7 @@
 import NavHeader from './../components/Header.vue'
 import NavFooter from './../components/Footer.vue'
 import Modal from './../components/Modal.vue'
+// import axios from 'axios'
 export default {
 	name: 'cart',
 	// data不要用全局的data:[],要用局部的data(){}方式。
@@ -145,7 +146,7 @@ export default {
 	// 如果直接暴露一个object，就变成了一个全局的data变量了。
 	data(){
 		return{
-
+			cartList:[]
 		}
 	},
 	// 引入组件，里面可以包含n个组件。
@@ -154,6 +155,22 @@ export default {
 		NavHeader,
 		NavFooter,
 		Modal
+	},
+	mounted:function(){
+		this.init();//初始化购物车列表
+	},
+	methods:{
+		init(){
+			// axios.get("");
+			// 发get请求怎么发呢？http://localhost:8080/mock/cart.json前面的端口就不需要了。
+			this.axios.get("/mock/cart.json").then((response)=>{
+				// console.log(response);//"no-console":"off", // package.json里给"eslintConfig"的"rules": {},里面加个"no-console":"off"然后重新启动编译。
+				//这个data整个axios的一个结构。
+				let res = response.data;//"no-unused-vars":0
+				// debugger;//调试 "no-debugger":"off",
+				this.cartList = res.data;
+			})
+		}
 	}
 }
 </script>
