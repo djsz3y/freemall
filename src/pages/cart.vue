@@ -59,7 +59,7 @@
             <li v-for="item in cartList" v-bind:key="item.productId">
               <div class="cart-tab-1">
                 <div class="cart-item-check">
-                  <a href="javascipt:;" class="checkbox-btn item-check-btn" v-bind:class="{'checked':item.checked}">
+                  <a href="javascipt:;" class="checkbox-btn item-check-btn" v-bind:class="{'checked':item.checked}" @click="editCart('checked',item)">
                     <svg class="icon icon-ok">
                       <use xlink:href="#icon-ok"></use>
                     </svg>
@@ -79,15 +79,15 @@
                 <div class="item-quantity">
                   <div class="select-self select-self-open">
                     <div class="select-self-area">
-                      <a class="input-sub">-</a>
+                      <a class="input-sub" v-on:click="editCart('minus',item)">-</a><!-- 监听事件="事件名称(获取加/减,对谁进行加减?item.productNum。所以传item)" -->
                       <span class="select-ipt">{{item.productNum}}</span>
-                      <a class="input-add">+</a>
+                      <a class="input-add" v-on:click="editCart('add',item)">+</a><!-- 很明显下面要定义这么一个方法 -->
                     </div>
                   </div>
                 </div>
               </div>
               <div class="cart-tab-4">
-                <div class="item-price-total">￥{{item.productPrice*item.productNum}}元</div>
+                <div class="item-price-total">{{item.productPrice*item.productNum | currency}}</div>
               </div>
               <div class="cart-tab-5">
                 <div class="cart-item-opration">
@@ -159,7 +159,23 @@ export default {
 	mounted:function(){
 		this.init();//初始化购物车列表
 	},
+	filters:{
+		// 定义一个币种,货币的格式化
+		// currency:function(){}
+		// currency:()=>{}箭头函数
+		// currency(){}简写
+		// currency用来格式化每个item的总金额的。
+		// 金额怎么格式化两位，并且拼接一个符号?
+		// value.toFixed(2)本身就会四舍五入。
+		// 想测试一个方法,直接打开控制台F12Console
+		currency(value){
+			if(!value)return 0.00;
+			return '￥' + value.toFixed(2) + '元';
+		}
+		// 怎么用过滤器？网上找金额的位置。
+	},
 	methods:{
+		// 初始化购物车列表数据
 		init(){
 			// axios.get("");
 			// 发get请求怎么发呢？http://localhost:8080/mock/cart.json前面的端口就不需要了。
@@ -170,6 +186,25 @@ export default {
 				// debugger;//调试 "no-debugger":"off",
 				this.cartList = res.data;
 			})
+		},
+		/** 
+		 * 修改购物车数量 
+		 * @date 2020-01-15 
+		 * type {Object} str 或者叫flag 要知道改了什么东西。
+		 * item {Object} 传过来的对象 
+		 * @return {Boolean} 返回值 
+		 * @author 田素源 
+		 */
+		editCart(type,item){
+			if(type == 'add'){
+				item.productNum++;//vue使用dom操作，setter getter，对象属性变化，触发setter，setter调用视图监听器，同时渲染视图。
+			}else if(type == 'minus'){
+				item.productNum--;//vue3.0使用代理
+			}else{
+				// 第62行：<a href="javascipt:;" class="checkbox-btn item-check-btn" v-bind:class="{'checked':item.checked}" @click="editCart('checked',item)">
+				item.checked = !item.checked;
+				//清除一下缓存
+			}
 		}
 	}
 }
