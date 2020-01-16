@@ -135,10 +135,10 @@
       </div>
     </div>
   </div>
-  <!-- 标签的方式用modal组件 -->
-  <modal></modal>
   <!-- 标签的方式用nav-footer组件 -->
   <nav-footer></nav-footer>
+	<!-- 标签的方式用modal组件 -->
+	<modal></modal>
 </div>
 </template>
 
