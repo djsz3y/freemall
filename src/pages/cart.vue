@@ -108,8 +108,10 @@
         <div class="cart-foot-inner">
           <div class="cart-foot-l">
             <div class="item-all-check">
-              <a href="javascipt:;">
-                <span class="checkbox-btn item-check-btn check">
+							<!-- 全选反选1.绑定事件toggleCheckAll，a标签是全选 -->
+              <a href="javascipt:;" @click="toggleCheckAll">
+								<!-- 全选反选7.根据计算属性动态绑定属性class的check为true或false。-->
+                <span class="checkbox-btn item-check-btn" v-bind:class="{'check':checkAllFlag}">
                   <svg class="icon icon-ok">
                     <use xlink:href="#icon-ok" /></svg>
                 </span>
@@ -119,10 +121,16 @@
           </div>
           <div class="cart-foot-r">
             <div class="item-total">
-              总价: <span class="total-price">￥89.00元</span>
+							<!-- 动态金额2.这里不要写方法，是计算属性，通过方法来计算，还是个属性。
+														加个过滤器filter currency。
+							-->
+              总价: <span class="total-price">{{totalPrice | currency}}</span>
             </div>
             <div class="btn-wrap">
-              <a class="btn btn--red btn--dis">结算</a>
+							<!-- 结算按钮2.btn--dis是变灰。一些被选中返回true，都不选返回false。一些被选中结算按钮变红，所以是!checkedCount
+														点击事件，跳到地址选配页面。
+							-->
+              <a class="btn btn--red" v-bind:class="{'btn--dis':!checkedCount}" @click="checkOut">结算</a>
             </div>
           </div>
         </div>
@@ -177,9 +185,11 @@ export default {
 	// 如果直接暴露一个object，就变成了一个全局的data变量了。
 	data(){
 		return{
-			modalConfirm:false,//插槽10.弹框显示属性。默认false，什么时打开呢，点删除按钮的时候。
-			delItem:'',//插槽15-2.准备删除的对象
-			cartList:[]
+			modalConfirm:false//插槽10.弹框显示属性。默认false，什么时打开呢，点删除按钮的时候。
+			,delItem:''//插槽15-2.准备删除的对象
+			//,checkAllFlag:false//全选反选4-2.所以data(){}里要定义变量checkAllFlag:false。
+			,cartList:[]
+
 		}
 	},
 	// 引入组件，里面可以包含n个组件。
@@ -191,6 +201,43 @@ export default {
 	},
 	mounted:function(){
 		this.init();//初始化购物车列表
+	},
+	// 全选反选5-2.定义计算属性：实时监听某些数据的变化
+	computed:{
+		checkAllFlag(){
+			/**
+			 * 这里判断	mock数据是否全部被选中了，有一项没被选中就不能选中全选。
+			 * 遍历cartList:this.cartList.every((item)=>{}),所有对象都符合条件就返回true。
+			 * cartList里每一项item的checked都是true时，这个cartList就返回true
+			 * 这是every的一个作用。
+			 */
+			// 当数据中所有对象都返回true，整体才会返回true。
+			return this.cartList.every((item)=>{
+				return item.checked;//有一个是false，整体就是false。
+			});
+		},
+		// 结算按钮1.判断购物车是否有选中的商品
+		checkedCount(){
+			// 购物车到底有没有选中商品。
+			return this.cartList.some((item)=>{
+				return item.checked;//某一些满足就返回true
+			})
+		},
+		// 计算总金额
+		totalPrice(){
+			// 动态金额1.还是要在计算属性里。有一项就会变，要实时计算。
+			let money = 0;
+			this.cartList.forEach((item)=>{
+				// 先判断选没选中,选中以后才能计算金额。
+				if(item.checked){
+					money += item.productPrice*item.productNum;
+				}
+			});
+			return money;
+			//一旦点删除，item对象就发生变化。cartList少了一个子元素，就会重新计算。
+			//cartList没有发生变化，是不会进入到方法totalPrice里的。
+			//这个方法只会监视cartList的变化，cartList不变，这个方法不会进去。
+		}
 	},
 	filters:{
 		// 定义一个币种,货币的格式化
@@ -271,7 +318,56 @@ export default {
 			})
 			// 好用神奇数组方法
 		},
-		
+		/**
+		 * 全选反选2.全选和反选
+		 * 弄个方法toggleCheckAll
+		 */
+		toggleCheckAll(){
+			/**
+			 * 全选反选3.总金额要计算属性,所以要控制上面让每一个对象都选中或者都不选中,
+			 * 首先要知道当前点的全选是选中还是没选中,
+			 * 所以要定义个变量,立一个flag
+			 */ 
+			//全选反选4-1.所以data(){}里要定义变量checkAllFlag。
+			//默认false，再选是true，默认false怎么来，动态计算，一开始不知道当前选中、没选中。
+			//怎么知道选中的是全选、非全选？取决于mock数据全部选中了，即全选，一条没选中，就不能全选
+			// 所以全选反选4-2的data(){checkAllFlag:false}不能这样定义，要用到计算属性，因为这些数据都用到了mock接口的json。
+			let flag = !this.checkAllFlag;
+			// 全选反选5-1.怎么定义计算属性？computed:{},
+			
+			// 全选反选6.flag是当每一项都被选，this.checkAllFlag应该全选即true，因为此方法是切换的，所以应该反选，这个flag就是false。
+			this.cartList.forEach((item)=>{
+				item.checked = flag;//应该反选，所以把flag给了当前cartList的每一项item。
+			})
+		},
+		// 结算按钮3.按钮灰色还是可以点的。所以要
+		checkOut(){
+			// 一些被选中的话
+			if(this.checkedCount){
+				// 页面跳转JS API方式路由------这里很重要80%不知道。
+				this.$router.push({
+					path:'/address'
+				})
+				//页面是单页面，很自然的就跳转过来了。
+				/**
+				 * 整个页面是没有变化的，就是把组件给替换掉了。
+				 * <Root> <App> <Cart>-》<Root> <App> <Addr>
+				 * 这是单页面很友好的体验
+				 * 但是不利于su，搜索引擎搜索不到，本来就是一个页面。
+				 * 
+				 * 本节课：
+				 * 金额计算，全选反选
+				 * 计算属性computed，every每一个都选中就，some部分选中就
+				 * 
+				 * 本章：
+				 * v-if v-bind v-for循环指令 v-on自定义事件的指令
+				 * 过滤器（局部过滤器） 插槽（记得新语法插槽） computed计算属性的语法
+				 * 弹框 控制 绑定class 绑定img图片
+				 * 
+				 * 知识点很多，多看几遍
+				 */
+			}
+		}
 	}
 	
 }
