@@ -68,7 +68,7 @@
         <div class="addr-list-wrap">
           <div class="addr-list">
             <ul>
-              <li  class="check" v-for="item in addressFilter" v-bind:key="item.addressId">
+              <li  v-bind:class="{'check':checkedIndex == index}" v-for="(item,index) in addressFilter" v-bind:key="item.addressId" @click="checkedIndex=index">
                 <dl>
                   <dt>{{item.userName}}</dt>
                   <dd class="address">{{item.streetName}}</dd>
@@ -76,16 +76,16 @@
                 </dl>
                 <div class="addr-opration addr-del">
                   <!-- 删除地址 -->
-                  <a href="javascript:;" class="addr-del-btn">
+                  <a href="javascript:;" class="addr-del-btn" @click="delAddress(item.addressId)">
                     <svg class="icon icon-del">
                       <use xlink:href="#icon-del"></use>
                     </svg>
                   </a>
                 </div>
-                <div class="addr-opration addr-set-default">
-                  <a href="javascript:;" class="addr-set-default-btn"><i>设为默认</i></a>
+                <div class="addr-opration addr-set-default"  v-if="!item.isDefault">
+                  <a href="javascript:;" class="addr-set-default-btn" @click="setDefault(item.addressId)"><i>设为默认</i></a>
                 </div>
-                <div class="addr-opration addr-default">默认地址</div>
+                <div class="addr-opration addr-default" v-if="item.isDefault">默认地址</div><!-- 3-2 5:55 -->
               </li>
   
               <li class="addr-new">
@@ -130,15 +130,23 @@
           </div>
         </div>
         <div class="next-btn-wrap">
-          <a class="btn btn--m btn--red" href="#">下一步</a>
+					<!-- #是一个锚点，可以锚到任何一个位置，href写javascript:;并且定义一个click点击事件 -->
+          <a class="btn btn--m btn--red" href="javascript:;" @click="next">下一步</a>
         </div>
       </div>
     </div>
   </div>
   <!-- 标签的方式用nav-footer组件 -->
   <nav-footer></nav-footer>
-	<!-- 标签的方式用modal组件 -->
-	<modal></modal>
+	<!-- 标签的方式用modal组件，close事件直接设置modalConfirm为false，可以少写一个方法 -->
+	<modal :mdShow="modalConfirm" @close="modalConfirm=false">
+		<template v-slot:message>
+			<p>更多实战讲解，请前往慕课学习新课《Vue全家桶从0打造小米商城》</p>
+		</template>
+		<template v-slot:btnGroup>
+			<a class="btn btn--m btn--red" href="javascript:;" @click="modalConfirm=false">关闭</a>
+		</template>
+	</modal>
 </div>
 </template>
 
@@ -151,6 +159,8 @@ export default {
 	data(){
 		return {
 			limit:3,
+			checkedIndex:0,
+			modalConfirm:false,
 			addressList:[]
 		}
 	},
@@ -176,6 +186,11 @@ export default {
 			this.axios.get('/mock/address.json').then((response)=>{
 				let res = response.data;
 				this.addressList = res.data;
+				res.data.forEach((item,index)=>{
+					if(item.isDefault){
+						this.checkedIndex = index;
+					}
+				})
 			});			
 		},
 		expand(){
@@ -184,6 +199,28 @@ export default {
 			}else{
 				this.limit = 3;
 			}
+		},
+		setDefault(addressId){
+			this.addressList.map((item)=>{
+				if(addressId==item.addressId){
+					item.isDefault = true;
+				}else{
+					item.isDefault = false;
+				}
+			})
+		},
+		delAddress(addressId){
+			// map返回对数组操作后的数组
+			this.addressList.map((item,index)=>{
+				if(addressId == item.addressId){
+					// 对原数组进行删除/添加,返回被删的项目
+					// splice()会改变原始数组。
+					this.addressList.splice(index,1);
+				}
+			})
+		},
+		next(){
+			this.modalConfirm = true;
 		}
 	}
 }
